@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include "dsu.cpp"
 
 using namespace std;
 
@@ -39,4 +40,21 @@ int main(int argc, char const *argv[])
 		cin >> n;
 	}
 	return 0;
+}
+
+void kruskal(unsigned int n,vect<ruta> rutas){
+	int res=0;	
+	dsu conj(n);
+	while(!rutas.empty()){
+		ruta r=ruta.top();
+		ruta.pop();
+		int c1=r.c1();
+		int c2=r.c2();
+		if(conj.find(c1) != conj.find(c2)){
+			int costo= abs(ruta.costo());
+			res=res+costo;
+			conj.unir(c1,c2);
+		}
+	}
+
 }
