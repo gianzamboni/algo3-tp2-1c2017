@@ -1,8 +1,8 @@
 CC=g++
 # Hey!, I am comment number 2. I want to say that CFLAGS will be the
 # options I'll pass to the compiler.
-OFLAGS=-c -g -ggdb -Wall -std=c++11
-CFLAGS=-g -ggdb -Wall -std=c++11
+OFLAGS= -c -g -ggdb -Wall
+CFLAGS=-std=c++11 -g -ggdb -Wall
 
 #SOURCESE1=
 SOURCESE2=dsu.o ej2.o
