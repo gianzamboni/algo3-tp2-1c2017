@@ -1,4 +1,3 @@
-
 #include <vector>
 
 using namespace std;
@@ -12,8 +11,8 @@ public:
 
 	
 	int find(unsigned int x);
-
 	void unir(unsigned int x, unsigned int y);
+	void mostrar();
 
 	vector<unsigned int> get_padre() {
 		return padre;
