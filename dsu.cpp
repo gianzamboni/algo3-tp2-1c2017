@@ -1,9 +1,9 @@
-#include "dsu.h"
 #include <vector>
 #include <iostream> 
+#include "dsu.hpp"
 
 dsu::dsu(unsigned int n ){
-  for (int i = 0; i < n; i++) {
+  for (unsigned int i = 0; i < n; i++) {
     padre.push_back(i);
     altura.push_back(1);
   }
@@ -29,12 +29,12 @@ void dsu::unir(unsigned int x, unsigned int y){
 
 void dsu::mostrar(){
 	cout << "pad: [";
-	for (int i = 0; i < padre.size(); ++i)
+	for (unsigned int i = 0; i < padre.size(); ++i)
 		cout << ' ' << padre[i]; 
 	cout << " ]" << endl;
 
 	cout << "alt: [";
-	for (int i = 0; i < altura.size(); ++i)
+	for (unsigned int i = 0; i < altura.size(); ++i)
 		cout << ' ' << altura[i];
 	cout << " ]" << endl;
 }

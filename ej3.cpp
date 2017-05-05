@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "dsu.h"
+#include "dsu.hpp"
 using namespace std;
 
 
@@ -23,7 +23,7 @@ void kruskal(unsigned int n, vector<Ruta> rutas){
 	int res = 0;	
 	vector<Ruta> solu;
 	dsu conj(n);
-	for (int i = 0; i < rutas.size(); ++i){
+	for (unsigned int i = 0; i < rutas.size(); ++i){
 		Ruta r = rutas[i];		
 		int c1 = r.c1-1;
 		int c2 = r.c2-1;
@@ -41,7 +41,7 @@ void kruskal(unsigned int n, vector<Ruta> rutas){
 	}
 
 	cout << res << " " << solu.size() << " ";
-	for(int i=0; i<solu.size(); i++){
+	for(unsigned int i=0; i<solu.size(); i++){
 		Ruta actual = solu[i];
 		cout << actual.c1 << " " << actual.c2 << " ";
 	}

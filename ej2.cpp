@@ -2,7 +2,8 @@
 #include <list>
 #include <vector>
 #include <algorithm>
-#include "dsu.h"
+#include <limits.h>
+//#include "dsu.h"
 using namespace std;
 
 
@@ -50,11 +51,11 @@ struct Grafo {
 //PROTOPIPOS
 int subsidiar(Grafo* g, int max_c);
 int min(list<int> v);
-int bellman(Grafo g, Nodo n, int costo);
+bool bellman(Grafo* g, int n, int costo);
 
 int main() {
 	
-	uint n, m, n1, n2;
+	int n, m, n1, n2;
 	int c;
 	cin >> n >> m;
 	int max_c = 0;
@@ -78,6 +79,7 @@ int main() {
 
 int subsidiar(Grafo* g, int max_c){
 
+	/*
 	dsu union_find(g->n);
 	// El for este funciona a partir c++11
 	for(Nodo nodo : g->nodos){
@@ -114,13 +116,15 @@ int subsidiar(Grafo* g, int max_c){
 	for(list<int> cc : componentes_conexas){
 		//Armar el subgrafo de la cc;
 		Grafo componente_conexa(&cc, g);
+	*/
 		int min = 0;
 		int max = max_c;
 
-		while(min + 1 < max){
+		while(min + 1 < max) {
 			int c = min + (max-min)/2;
 
-			bool hay_ciclo = bellman(componente_conexa, componente_conexa.nodos[0].id, c);
+			//bool hay_ciclo = bellman(componente_conexa, componente_conexa.nodos[0].id, c);
+			bool hay_ciclo = bellman(g, g->nodos[0].id, c);
 
 			if(hay_ciclo) {
 				max = c;
@@ -128,11 +132,11 @@ int subsidiar(Grafo* g, int max_c){
 				min = c;
 			}
 		}
-
+/*
 		maximos_costos.push_back(min);
 	}
-
-	return min(maximos_costos);
+*/
+	return min;
 }
 
 int min(list<int> v){
@@ -143,6 +147,32 @@ int min(list<int> v){
 
 	return m;
 }
-int bellman(Grafo g, Nodo n, int costo) {
-	return 0;
-};
+
+bool bellman(Grafo* g, int nodeId, int costo) {
+
+	vector<uint> distancia(g->n,UINT_MAX);
+	vector<uint> predecesor(g->n, 0);
+
+	distancia[nodeId] = 0;              // Except for the Source, where the Weight is zero 
+   
+   	for(unsigned int i = 1; i < g->n; i++){
+   		for(Nodo nodo : g->nodos){
+   			for(Eje eje : nodo.incidentes){
+   				if( distancia[eje.inicio] + eje.costo < distancia[eje.fin]){
+   					distancia[eje.fin] = distancia[eje.inicio] + eje.costo;
+   					predecesor[eje.fin] = eje.inicio;
+   				}
+   			}
+   		}
+   	}
+
+	for(Nodo nodo: g->nodos){
+		for(Eje eje: nodo.incidentes){
+			if (distancia[eje.inicio] + eje.costo < distancia[eje.fin]) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}; 
