@@ -30,7 +30,7 @@ struct Grafo {
 
 	list<Eje> ejes;
 
-	Grafo(int n): n(n), tiene_rep(0), ejes(list<Eje>()){};
+	Grafo(int n): n(n), rep(0), tiene_rep(0), ejes(list<Eje>()){};
 	
 	void agregar_eje(uint nodo1, uint nodo2, int costo){
 		ejes.push_back(Eje(nodo1, nodo2, costo));
@@ -46,7 +46,7 @@ struct Grafo {
 //PROTOPIPOS
 bool bellman(Grafo* g, int n, int costo);
 int busqueda_binaria(int max, list<Grafo*>* c_conexas);
-int check_bellman(list<Grafo> componente_conexa, int k);
+bool check_bellman(list<Grafo*>* componente_conexa, int k);
 int subsidiar(Grafo* g, int max_c);
 
 list<Grafo*>* generar_conexas(Grafo* g);
@@ -77,6 +77,13 @@ int main() {
 int subsidiar(Grafo* g, int max_c){
 	list<Grafo*>* c_conexas = generar_conexas(g);
 	int k = busqueda_binaria(max_c+1, c_conexas);
+
+	while(!c_conexas->empty()){
+		delete c_conexas->front();
+		c_conexas->pop_front();
+	}
+	delete c_conexas;
+
 	return k;
 }
 
@@ -118,3 +125,51 @@ list<Grafo*>* generar_conexas(Grafo* g){
 
 	return c_conexas;
 };
+
+int busqueda_binaria(int max, list<Grafo*>* componentes_conexas){
+	// Armar las compenentes conexas
+	int min = 0;
+	while(min + 1 < max){
+		int k = min + (max-min)/2;
+		if(check_bellman(componentes_conexas, k)){
+			max = k;
+		} else {
+			min = k;
+		}
+	}
+
+	return min;
+}
+
+bool check_bellman(list<Grafo*>* componente_conexa, int k){
+	bool res = true;
+	for(Grafo* c : *componente_conexa){
+		res = res && bellman(c, c->rep,k);
+	}
+	return res;
+}
+
+bool bellman(Grafo* g, int nodeId, int costo) {
+
+	vector<uint> distancia(g->n,UINT_MAX);
+	vector<uint> predecesor(g->n, 0);
+
+	distancia[nodeId] = 0;              // Except for the Source, where the Weight is zero 
+   
+   	for(unsigned int i = 0; i < g->n; i++){
+		for(Eje eje : g->ejes){
+   			if( distancia[eje.inicio] + eje.costo - costo < distancia[eje.fin]){
+   				distancia[eje.fin] = distancia[eje.inicio] + eje.costo - costo;
+   				predecesor[eje.fin] = eje.inicio;
+   			}
+   		}
+	}
+
+	for(Eje eje: g->ejes){
+		if (distancia[eje.inicio] + eje.costo - costo < distancia[eje.fin]) {
+			return true;
+		}
+	}
+
+	return false;
+}; 
