@@ -33,6 +33,7 @@ void kruskal(unsigned int n, vector<Ruta> rutas){
 				res += costo;
 			solu.push_back(r);
 			conj.unir(c1,c2);
+			conj.mostrar();
 		}
 		else{
 			if(costo < 0)
