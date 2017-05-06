@@ -5,7 +5,7 @@ OFLAGS= -c -g -ggdb -Wall
 CFLAGS=-std=c++11 -g -ggdb -Wall
 
 #SOURCESE1=
-SOURCESE2=ej2.o
+SOURCESE2=dsu.o ej2.o
 SOURCESE3=dsu.o ej3.o
 #SOURCESTIEMPOS=
 
