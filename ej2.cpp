@@ -40,16 +40,24 @@ struct Grafo {
 		ejes.push_back(eje);
 	};
 
-
+	void mostrar(){
+		cout << "Nodos: " << n << endl;
+		cout << "Ejes: " << ejes.size() << endl;
+		cout << "Rep: " << rep << endl;
+		cout << "Hay Rep: " << tiene_rep << endl;
+		cout << "Ejes" << endl;
+		cout << "======================" << endl;
+		for (list<Eje>::iterator it=ejes.begin(); it != ejes.end(); ++it){
+			cout << (*it).inicio << " " << (*it).fin << " " << (*it).costo << endl;
+		}
+	}
 };
 
 //PROTOPIPOS
-bool bellman(Grafo* g, int n, int costo);
-int busqueda_binaria(int max, list<Grafo*>* c_conexas);
-bool check_bellman(list<Grafo*>* componente_conexa, int k);
+void agregar_nodo_fictio(Grafo* g);
+bool hay_ciclos_negativos(Grafo* g, int n, int costo);
+int busqueda_binaria(int max, Grafo* c_conexas);
 int subsidiar(Grafo* g, int max_c);
-
-list<Grafo*>* generar_conexas(Grafo* g);
 
 
 int main() {
@@ -66,6 +74,7 @@ int main() {
 			if( c > max_c ) max_c = c;
 		}
 
+		//g.mostrar();
 		int valor_max = subsidiar(&g, max_c);
 		cout << valor_max << endl;
 		cin >> n >> m;
@@ -75,63 +84,25 @@ int main() {
 }
 
 int subsidiar(Grafo* g, int max_c){
-	list<Grafo*>* c_conexas = generar_conexas(g);
-	int k = busqueda_binaria(max_c+1, c_conexas);
-
-	while(!c_conexas->empty()){
-		delete c_conexas->front();
-		c_conexas->pop_front();
-	}
-	delete c_conexas;
-
+	agregar_nodo_fictio(g);
+	int k = busqueda_binaria(max_c+1, g);
 	return k;
 }
 
-list<Grafo*>* generar_conexas(Grafo* g){
-	dsu uf(g->n);
-	// Union find O(m)
-	for(Eje e : g->ejes){
-		if(uf.find(e.inicio) != uf.find(e.fin) ) 
-				uf.unir(e.inicio, e.fin);
+void agregar_nodo_fictio(Grafo* g){
+	g->n++;
+
+	for(uint i = 0; i < g->n - 1; i++){
+		g->agregar_eje(g->n-1, i, 1);
 	}
-
-	vector<uint> cantidades(g->n, 0);
-	// Contamos la cantidad de nodos que tiene cada componente conexa O(n)
-	for(int i = 0; i < g->n; i++){
-		cantidades[uf.find(i)]++;
-	}
-
-	vector<Grafo*> componentes_t(g->n, new Grafo(0));
-
-	// Inicializamos los valores de las componentes conexas que nos importan O(n)
-	for(int i = 0; i < g->n; i++){
-		if (cantidades[i] > 0) {
-			componentes_t[i]->n = cantidades[i];
-			componentes_t[i]->rep = i;
-			componentes_t[i]->tiene_rep = true;
-		}
-	}
-
-	// Agregamos los ejes a la correspondiente componente conexa O(m)
-	for(Eje e : g->ejes){
-		componentes_t[uf.find(e.inicio)]->agregar_eje(e);
-	}
-
-	// Filtramos todas las componentes conexas que no tienen ejes O(n)
-	list<Grafo*>* c_conexas = new list<Grafo*>();
-	for(Grafo* g : componentes_t){
-		if(g->tiene_rep) c_conexas->push_back(g);
-	}
-
-	return c_conexas;
 };
 
-int busqueda_binaria(int max, list<Grafo*>* componentes_conexas){
+int busqueda_binaria(int max, Grafo* g){
 	// Armar las compenentes conexas
 	int min = 0;
 	while(min + 1 < max){
 		int k = min + (max-min)/2;
-		if(check_bellman(componentes_conexas, k)){
+		if(hay_ciclos_negativos(g, g->n - 1, k)){
 			max = k;
 		} else {
 			min = k;
@@ -141,15 +112,7 @@ int busqueda_binaria(int max, list<Grafo*>* componentes_conexas){
 	return min;
 }
 
-bool check_bellman(list<Grafo*>* componente_conexa, int k){
-	bool res = true;
-	for(Grafo* c : *componente_conexa){
-		res = res && bellman(c, c->rep,k);
-	}
-	return res;
-}
-
-bool bellman(Grafo* g, int nodeId, int costo) {
+bool hay_ciclos_negativos(Grafo* g, int nodeId, int costo) {  // Bellman
 
 	vector<uint> distancia(g->n,UINT_MAX);
 	vector<uint> predecesor(g->n, 0);
@@ -157,16 +120,16 @@ bool bellman(Grafo* g, int nodeId, int costo) {
 	distancia[nodeId] = 0;              // Except for the Source, where the Weight is zero 
    
    	for(unsigned int i = 0; i < g->n; i++){
-		for(Eje eje : g->ejes){
-   			if( distancia[eje.inicio] + eje.costo - costo < distancia[eje.fin]){
-   				distancia[eje.fin] = distancia[eje.inicio] + eje.costo - costo;
-   				predecesor[eje.fin] = eje.inicio;
+		for (list<Eje>::iterator it=g->ejes.begin(); it != g->ejes.end(); ++it){
+   			if( distancia[(*it).inicio] + (*it).costo - costo < distancia[(*it).fin]){
+   				distancia[(*it).fin] = distancia[(*it).inicio] + (*it).costo - costo;
+   				predecesor[(*it).fin] = (*it).inicio;
    			}
    		}
 	}
 
-	for(Eje eje: g->ejes){
-		if (distancia[eje.inicio] + eje.costo - costo < distancia[eje.fin]) {
+	for (list<Eje>::iterator it=g->ejes.begin(); it != g->ejes.end(); ++it){
+		if (distancia[(*it).inicio] + (*it).costo - costo < distancia[(*it).fin]) {
 			return true;
 		}
 	}
