@@ -4,19 +4,19 @@ CC=g++
 OFLAGS= -c -g -ggdb -Wall
 CFLAGS=-std=c++11 -g -ggdb -Wall
 
-#SOURCESE1=
-SOURCESE2=dsu.o ej2.o
+SOURCESE1=ej1.o
+SOURCESE2=ej2.o
 SOURCESE3=dsu.o ej3.o
 #SOURCESTIEMPOS=
 
 tp:
-	#make ej1
+	make ej1
 	make ej2
 	make ej3
 	#make tiempos
 
-#ej1: $(SOURCESE1)
-#	$(CC) $(CFLAGS) $(SOURCESE1) -o Ej1
+ej1: $(SOURCESE1)
+	$(CC) $(CFLAGS) $(SOURCESE1) -o Ej1
 
 ej2: $(SOURCESE2)
 	$(CC) $(CFLAGS) $(SOURCESE2) -o Ej2
