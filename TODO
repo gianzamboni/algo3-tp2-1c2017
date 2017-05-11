@@ -3,12 +3,33 @@ TODO
 
 Ejercicio 1
 ===========
-* Empezarlo
 
 Ejercicio 2
 ===========
 
-* Hacer delete de lista y componentes conexas
+Ejercicio 3
+===========
+
+
+Tests
+=====================
+
+Ejercicio 1
+===========
+
+output test esperado:
+12
+11
+-1
+-1
+
+
+Ejercicio 2
+===========
+output test esperado:
+2
+4
+2
 
 Ejercicio 3
 ===========
