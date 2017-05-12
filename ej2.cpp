@@ -61,11 +61,12 @@ int subsidiar(Grafo* g, int max_c);
 
 int main() {
 	int n, m, n1, n2;
-	int c;
+	int c, max_c;
 	cin >> n >> m;
-	int max_c = 0;
+
 	while(n != -1 && m != -1){
 		Grafo g(n);
+		max_c = 0;
 		for(int i = 0; i < m; i++){
 			cin >> n1 >> n2 >> c;
 			g.agregar_eje(n1-1, n2-1, c);
@@ -73,6 +74,7 @@ int main() {
 			if( c > max_c ) max_c = c;
 		}
 
+		//cout << max_c << endl;
 		//g.mostrar();
 		int valor_max = subsidiar(&g, max_c);
 		cout << valor_max << endl;
