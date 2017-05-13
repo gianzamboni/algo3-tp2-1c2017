@@ -4,15 +4,16 @@ import os
 from timeit import default_timer as timer
 
 ''' Generating Tests and Executing '''
-Size = 150	# from B to N size
-Z = 25	# how many times each size
+Size = 550	# from B to N size
+Z = 10	# how many times each size
 R = 10  # how many times each case
 
 open("res3", 'w').close()
 csvEj3 = open("./timesEj3.csv", "a")
 
-for N in range(1,Size):
-    print(N)
+for N in range(2,Size):
+    if(N % 5 == 0):
+        print(N)
     for z in range(Z):
         file = str(N) + ' '
         for n in range(1,N):
@@ -22,8 +23,12 @@ for N in range(1,Size):
                 ls += ' ' + str(randrange(2)) + ' ' + str(randrange(50))
                 file += ls + ' '
         file += str(-1)
-        
-        comm = "echo %s | ./ej3 >> res3" % (file)
+
+        test3 = open("test3", 'w')
+        test3.write(file)
+        test3.close()
+       
+        comm = "cat test3 | ./ej3 >> res3" 
         for i in range(0,R):
             startEj = timer()
             os.system(comm)
