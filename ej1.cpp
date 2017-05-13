@@ -57,7 +57,19 @@ void imprimir_Mat(const MatAdy& g, int n, int k);
 int solMatAdy();
 
 int main(int argc, char const *argv[]) {
-	cout<<solMatAdy()<<endl;
+	int origen, destino, k, n = 0;
+	while(n != -1){
+		MatAdy g = lecturaDatos(origen, destino, k, n);
+
+		//imprimir_Mat(g, n, k);
+		cerr<<"origen, destino, k , n , tamaño matriz "<< origen<<" "<<destino<<" "<<k<<" "<<n<<" "<<g.size()<<endl;
+		int sol = delivery_MatAdy(g, origen, destino, k, n);
+		cout<< sol<<endl;
+		cerr<<"tamaño matriz despues de correr sol "<<g.size()<<endl;
+		//g.clear();
+	}
+
+
 	//esto es para rep gian, lo de antes es MatAdy por eso corto esto, asi solo ejecuta lo que ya anda.
 	/*
 	int n;
@@ -160,6 +172,7 @@ int delivery_MatAdy(MatAdy& g, int origen, int destino, int k, int n){
 		}
 	}
 	if(!sol) tiempo = -1;
+	g.clear();
 	return tiempo;
 }
 
@@ -171,14 +184,17 @@ MatAdy lecturaDatos(int& origen, int& destino, int& k, int& n){
 	//acordate que las ciudades estan numeradas del 1 al n, entonces le restamos 1.
 	int c1, c2, d;
 	bool p;
+	cerr<<"Entre en LectDatos, n, m, origen, destino, k "<<n<<" "<<m<<" "<<origen<<" "<<destino<<" "<<k<<endl;
 	for(int i = 0; i<m; i++){
 		cin >> c1 >> c2 >> p >> d;
+		cerr<<"c1, c2, p, d "<<c1<< " "<<c2<<" "<<p<<" "<<d<<endl;
 		c1--;
 		c2--;
 		//si es premium quiero que el eje que se agrega sea del nodonivel1 al nodonivel2..
 		for(int j = 0; j<=k; j++){
 			if(p){
 				if(j == k) continue;
+				cerr<<"ciudad1, ciudad2, nivelorigen, niveldestino "<<c1<<" "<<c2<<" "<<c1+(j*n)<<" "<<c2+((j+1)*n)<<endl;
 				g[c1 + (j*n)][c2 + ((j+1)*n)] = d;
 
 			}else{
