@@ -2,13 +2,14 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <limits>
 using namespace std;
 
 struct Nodo;
+
+
 //vector externo habla del nivel k, y adentro tenes el grafo con n nodos en ese nivel.
 typedef vector<vector<Nodo> >  Grafo;
-//esta matriz tiene n*(k+1) de cada lado.
-typedef vector<vector<int> > MatAdy;
 
 struct Ruta {
 
@@ -21,6 +22,7 @@ struct Ruta {
 		destino(destino),dist(d), premium(prem) {}
 
 };
+
 
 struct Nodo {
 
@@ -42,15 +44,30 @@ struct Nodo {
 	}
 };
 
+//esta matriz tiene n*(k+1) de cada lado.
+typedef vector<vector<int> > MatAdy;
+//iterador de ruta, facilita la lectura
+typedef list<Ruta>::iterator ItRuta;
+
 int delivery(Grafo* g, int origen, int destino, int k);
+//busca el nodo de la lista de nodos que tiene el eje menos pesado con el nodo origen, y guarda el valor del eje en dist
+Nodo& buscarMin(vector<Nodo>& nodos, Nodo& nodo_Origen, int& dist);
+
+void sacar(vector<Nodo>& ls,const Nodo& valor);
+//devuelve el peso del eje que va del nodo_Origen al aux, si no hay devuelve -1
+int buscador(Nodo & Nodo_Origen,Nodo* aux);
+//aunque nos gustaria usar generar vecino, tal vez ya es vecino el nodo origen y el aux, entonces solo queremos cambiar el valor.(esto por ahi tendria que estar en una struct.
+void generar_Ruta(Nodo& Nodo_Origen, Nodo* aux, int dist);
+//devuelve el valor minimo entre todos los nodos destinos, si no existe valor devuelve -1
+int buscar_Destinos(Nodo& Nodo_Origen, int destino);
 
 MatAdy lecturaDatos(int& origen, int& destino, int& k, int& n);
 //para que funcione tenes que pasar lecturaDatos, asi crea la matAdy.
 int delivery_MatAdy(MatAdy& g, int origen, int destino, int k, int n);
 
-int buscarMin(const vector<int>& nodos, const vector<int>& filaAdy);
+int buscarMin_MatAdy(const vector<int>& nodos, const vector<int>& filaAdy);
 
-void sacar(vector<int>& ls, int valor);
+void sacar_MatAdy(vector<int>& ls, int valor);
 
 void imprimir_Mat(const MatAdy& g, int n, int k);
 //viene con la lectura de datos incluida, para testear eso se lo tendriamos que sacar.
@@ -117,8 +134,38 @@ int main(int argc, char const *argv[]) {
 
 
 //Si hay bug buscar los id de los nodos del grafo y los indices de la matriz de ady y nodosseguros|
+//copia de dijkstra pero con forma de Gian, faltan implementar las funciones serias y ver el tema de referenccia y copia que seguro van a estar mal.
 int delivery(Grafo& g, int origen, int destino, int k, int n){
+	if(origen == destino) return 0;
+	unsigned int cant_Nodos = n*(k+1);
+	vector<Nodo> nodos_Seguros;
+	vector<Nodo> nodos_No_Seguros;
+	for(int i = 0; i<g.size(); i++){//recorre los niveles con el i
+		for(int j = 0; j<g[i].size(); j++){//recorre el grafo en el nivel i
+			nodos_No_Seguros.push_back(g[i][j]);
+		}
+	}
 
+	Nodo& nodo_Origen = g[0][origen-1];
+	while(nodos_Seguros.size() != cant_Nodos){
+		int dist_Min;//la distancia del Nodo_Min
+		Nodo& nodo_Min = buscarMin(nodos_No_Seguros, nodo_Origen, dist_Min);//los nodos no seguros y el Nodo origen
+		if(nodo_Min.id == origen -1) break; //fijares bien esta condicion
+		nodos_Seguros.push_back(nodo_Min);
+		sacar(nodos_No_Seguros, nodo_Min);
+		list<Ruta>& ady = nodo_Min.adyacente;
+		for(ItRuta it = ady.begin(); it != ady.end(); ++it){
+			Ruta* rutaAux = &(*it);
+			Nodo* aux = rutaAux -> destino;
+			int dist_Act = buscador(nodo_Origen, aux);
+			int dist_Posible = dist_Min + rutaAux->dist;
+			if(dist_Act > dist_Posible || dist_Act== -1){
+				generar_Ruta(nodo_Origen, aux, dist_Posible);
+			}
+		}
+	}
+	int tiempo = buscar_Destinos(nodo_Origen, destino);
+	return tiempo;
 }
 
 int solMatAdy(){
@@ -134,6 +181,7 @@ int delivery_MatAdy(MatAdy& g, int origen, int destino, int k, int n){
 	//-1 implica que no son vecinos, y un numero naturla mayor a cero indica el peso del pasar por ahi
 	//este frena cuando encuentra el minimo en n.
 	//es la implementacion de dijkstra usando arreglos leer principio de archivo para entender la matriz del digrafo.
+	if(origen == destino) return 0;
 	unsigned int cant_Nodos = n*(k+1);//n+(k+1)
 	vector<int> nodos_Seguros;
 	vector<int> nodos_No_Seguros;
@@ -141,13 +189,13 @@ int delivery_MatAdy(MatAdy& g, int origen, int destino, int k, int n){
 	while(nodos_Seguros.size() != cant_Nodos){//while se hace n veces
 		int nodo_Min;
 		//copiar bien buscarMin
-		nodo_Min = buscarMin(nodos_No_Seguros, g[origen-1]);//O(nodos.size())  **1**
+		nodo_Min = buscarMin_MatAdy(nodos_No_Seguros, g[origen-1]);//O(nodos.size())  **1**
 		//cerr<<"busque minimo es "<<nodo_Min<<endl;
 		//que la estacion 1 no este conectada a ninguna, de las que todavia no calculo el minimo
 		//si es n entonces ya no tengo por que actualizar otros nodos, ya que n estaria en la zona segura.
 		if(nodo_Min == -1 || nodo_Min % n== destino-1) break;
 		nodos_Seguros.push_back(nodo_Min);
-		sacar(nodos_No_Seguros, nodo_Min);//O(nodos.size())**2**
+		sacar_MatAdy(nodos_No_Seguros, nodo_Min);//O(nodos.size())**2**
 		for(unsigned int i = 0; i<nodos_No_Seguros.size();i++){//O(nodos.size())**3**
 			int pos = nodos_No_Seguros[i];
 			//cerr<<"Actualizando posibles "<<pos<<endl;
@@ -209,7 +257,7 @@ MatAdy lecturaDatos(int& origen, int& destino, int& k, int& n){
 busca la tupla que tenga el valor minimo(sin contar el -1) en el primer elemento
 de la tupla y devuelve la posicion. solo busca en las posiciones que estan en nodos.
 */
-int buscarMin(const vector<int>& nodos, const vector<int>& filaAdy){//O(nodos.size())
+int buscarMin_MatAdy(const vector<int>& nodos, const vector<int>& filaAdy){//O(nodos.size())
 	int min = numeric_limits<int>::max();/*
    como peor caso es que tenemos que recorrer las n estaciones y que todas pesen 1000, filaAdy es n+1 entonces min nunca va a ser un valor valido
    */
@@ -226,7 +274,7 @@ int buscarMin(const vector<int>& nodos, const vector<int>& filaAdy){//O(nodos.si
 }
 
 //funcion que saca el elemento ls[pos]
-void sacar(vector<int>& ls, int valor){//O(ls.size())
+void sacar_MatAdy(vector<int>& ls, int valor){//O(ls.size())
    int pos;
    for(unsigned int i = 0; i< ls.size();i++){
 	   if(ls[i]== valor){
