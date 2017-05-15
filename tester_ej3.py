@@ -4,8 +4,8 @@ import os
 from timeit import default_timer as timer
 
 ''' Generating Tests and Executing '''
-Size = 550	# from B to N size
-Z = 10	# how many times each size
+Size = 550	# from B to N size   MAX 550
+Z = 20	# how many times each size
 R = 10  # how many times each case
 
 open("res3", 'w').close()
