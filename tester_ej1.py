@@ -34,7 +34,7 @@ def generar_grafo(N,M,K,C):
 				lista.add(ruta)
 				count += 1
 	for i in lista:
-		file += i + str(randrange(1)) + ' ' + str(randrange(C)) + ' '
+		file += i + str(randrange(2)) + ' ' + str(randrange(C)) + ' '
 	return file + str(-1) + ' ' + str(-1)
 
 
@@ -42,7 +42,7 @@ open("res1", 'w').close()
 csvEj1 = open("./timesEj3.csv", "a")
 
 
-grafo = generar_grafo(30,75,15,20);
+grafo = generar_grafo(30,75,0,50);
 test1 = open("test1", 'w')
 test1.write(grafo)
 test1.close()
