@@ -33,7 +33,7 @@ struct Nodo {
 
 	void agregarVecino(Nodo* nodo, int dist) {
 		bool prem = false;
-		if(this->nivel != nodo->nivel){			
+		if(this->nivel != nodo->nivel){
 			prem = true;
 		};
 
@@ -53,15 +53,21 @@ typedef list<Ruta>::iterator ItRuta;
 
 int delivery(Grafo& g, int origen, int destino, int k, int n);
 //busca el nodo de la lista de nodos que tiene el eje menos pesado con el nodo origen, y guarda el valor del eje en dist
-Nodo* buscarMin(vector<bool>& nodos, Nodo* nodo_Origen);
+Nodo* buscarMin(vector<bool>& nodos, Nodo* nodo_Origen, int& dist_Min, int n);
 
-void sacar(vector<bool>& ls,Nodo* valor);
+void sacar(vector<bool>& ls,Nodo* valor,int n);
 //devuelve el peso del eje que va del nodo_Origen al aux, si no hay devuelve -1
 int buscador(Nodo & Nodo_Origen,Nodo* aux);
 //aunque nos gustaria usar generar vecino, tal vez ya es vecino el nodo origen y el aux, entonces solo queremos cambiar el valor.(esto por ahi tendria que estar en una struct.
 void generar_Ruta(Nodo& Nodo_Origen, Nodo* aux, int dist);
 //devuelve el valor minimo entre todos los nodos destinos, si no existe valor devuelve -1
 int buscar_Destinos(Nodo& Nodo_Origen, int destino);
+
+void imprimir_Vecinos(const Nodo& nod);
+
+void imprimir_Nivel(const Grafo& g);
+
+void imprimir_Grafo(const Grafo& g);
 
 MatAdy lecturaDatos(int& origen, int& destino, int& k, int& n);
 //para que funcione tenes que pasar lecturaDatos, asi crea la matAdy.
@@ -74,86 +80,6 @@ void sacar_MatAdy(vector<int>& ls, int valor);
 void imprimir_Mat(const MatAdy& g, int n, int k);
 //viene con la lectura de datos incluida, para testear eso se lo tendriamos que sacar.
 int solMatAdy();
-
-
-Nodo* buscarMin(vector<bool>& nodos, Nodo* nodo_Origen){
-	cout<<"entre a buscar min"<<endl;
-	Nodo* res= NULL;
-	list<Ruta>& ady = nodo_Origen->adyacente;
-	int min= numeric_limits<int>::max();
-	for (ItRuta it = ady.begin(); it != ady.end(); ++it){		
-		Ruta* rut = &(*it);
-		int minPar= rut->dist;
-		int k= rut->destino->nivel;
-		cout<< "min parcial "<<minPar<< " nivel "<< k<< endl; 
-		if (minPar<min && nodos[(rut->destino->id)*k]){
-			
-			res= rut->destino;
-		}
-	}
-	
-	return res;
-}
-
-void sacar(vector<bool>& ls,Nodo* valor){
-	cout<<"entre a sacar"<<endl;
-	int i = (valor->id -1)* valor->nivel;
-	ls[i]=false;
-}
-
-int buscador(Nodo& Nodo_Origen,Nodo* aux){	
-	list<Ruta>& ady = Nodo_Origen.adyacente;
-	ItRuta it=ady.begin();
-	int res=-1;
-	bool b=true;
-	while(b && it!=ady.end()){
-		if(aux->id == it->destino->id && aux->nivel == it->destino->nivel){
-			res= it->dist;
-			b=false;
-		}
-		it++;
-	}
-	return res;
-}
-
-void generar_Ruta(Nodo& Nodo_Origen, Nodo* aux, int distancia){
-	list<Ruta>& ady = Nodo_Origen.adyacente;
-	ItRuta it=ady.begin();
-	bool esta=false;
-	cout<< "id nodo aux: " << aux->id<< " id nodo origen: "<< Nodo_Origen.id<<endl;
-	cout << "largo ady "<< ady.size()<<endl;
-	while(!esta && it!=ady.end()){
-		cout<<"yay"<<endl;
-		if(aux->id == it->destino->id && aux->nivel == it->destino->nivel){
-			cout<<"1st if"<<endl;
-			it->dist= distancia;
-			esta=true;
-		}
-		it++;
-	}
-	if(!esta){
-		cout<<"2nd if"<<endl;
-		Nodo_Origen.agregarVecino(aux,distancia);
-	}
-}
-	
-
-int buscar_Destinos(Nodo& Nodo_Origen, int dest){
-	int res= -1;
-	list<Ruta>& ady = Nodo_Origen.adyacente;
-	int min= numeric_limits<int>::max();
-	for (ItRuta it = ady.begin(); it != ady.end(); ++it){
-		Ruta* rut = &(*it);
-		int minPar= rut->dist;
-		int ident = rut->destino->id;
-		if (ident == dest && minPar<min){
-			min= minPar;
-			res=minPar;
-		}
-	}
-	return res;
-}
-//devuelve el valor minimo entre todos los nodos destinos, si no existe valor devuelve -1
 
 int main(int argc, char const *argv[]) {
 	/*
@@ -171,7 +97,7 @@ int main(int argc, char const *argv[]) {
 */
 
 	//esto es para rep gian, lo de antes es MatAdy por eso corto esto, asi solo ejecuta lo que ya anda.
-	
+
 	int n;
 	cin >> n;
 	while (n != -1){
@@ -179,36 +105,36 @@ int main(int argc, char const *argv[]) {
 		int origen, destino, k;
 		cin >> m >> origen >> destino >> k;
 
-		Grafo grafo_nivelado(k, vector<Nodo> (n, Nodo()));
+		Grafo grafo_nivelado(k+1, vector<Nodo> (n, Nodo()));
 		int c1, c2, d;
 		bool p;
 
-		for(int nivel = 0; nivel < k; nivel++){
+		for(int nivel = 0; nivel <= k; nivel++){
 			for(int id = 0; id < n; id++){
 				grafo_nivelado[nivel][id].id = id;
 				grafo_nivelado[nivel][id].nivel = nivel;
 			}
 		}
 
-		cout << "Grafo iniciazializado" << endl;
+		//cout << "Grafo iniciazializado" << endl;
 		for (int i = 0; i < m; ++i){
 			cin >> c1 >> c2 >> p >> d;
 			c1--;
 			c2--;
 			if(p == 0) {
-				for(int nivel = 0; nivel < k; nivel++){
+				for(int nivel = 0; nivel <= k; nivel++){
 					grafo_nivelado[nivel][c1].agregarVecino(c2, nivel, d, &grafo_nivelado);
-					grafo_nivelado[nivel][c2].agregarVecino(c1, nivel, d, &grafo_nivelado);
-				}   
+					//grafo_nivelado[nivel][c2].agregarVecino(c1, nivel, d, &grafo_nivelado);
+				}
 			} else {
-				for(int nivel = 0; nivel < k-1; nivel++){
+				for(int nivel = 0; nivel < k; nivel++){
 					grafo_nivelado[nivel][c1].agregarVecino(c2, nivel+1, d, &grafo_nivelado);
 				}
 			}
-			cout << "Eje " << c1 << " " << c2 << " procesado" << endl;
+			//cout << "Eje " << c1 << " " << c2 << " procesado" << endl;
 		}
 
-		cout << "Grafo armado a partir de input" << endl;
+		//cout << "Grafo armado a partir de input" << endl;
 		cout << delivery(grafo_nivelado, origen, destino, k, n) << endl;
 		cin >> n;
 	}
@@ -228,31 +154,121 @@ int delivery(Grafo& g, int origen, int destino, int k, int n){
 			nodos_No_Seguros.push_back(true);
 		}
 	}
-	cerr<<"se rompe, despues de inicializar nodos seguros\n";
 	Nodo* nodo_Origen = &(g[0][origen-1]);
 	while(nodos_Seguros.size() != cant_Nodos){
 		int dist_Min;//la distancia del Nodo_Min
-		Nodo* nodo_Min = buscarMin(nodos_No_Seguros, nodo_Origen);//los nodos no seguros y el Nodo origen
-		if(nodo_Min->id == origen -1) break; //fijares bien esta condicion
+		Nodo* nodo_Min = buscarMin(nodos_No_Seguros, nodo_Origen, dist_Min, n);//los nodos no seguros y el Nodo origen
+		if( dist_Min == -1 || nodo_Min->id == destino -1) break; //fijares bien esta condicion
 		nodos_Seguros.push_back(*nodo_Min);
-		sacar(nodos_No_Seguros, nodo_Min);
+		sacar(nodos_No_Seguros, nodo_Min, n);
 		list<Ruta>& ady = nodo_Min->adyacente;
-		cerr<<"se rompe, despues de encontrar nodomin, este es "<<nodo_Min -> id<<" con nivel "<<nodo_Min->nivel<<endl;
 		for(ItRuta it = ady.begin(); it != ady.end(); ++it){
 			Ruta* rutaAux = &(*it);
 			Nodo* aux = rutaAux -> destino;
 			int dist_Act = buscador(*nodo_Origen, aux);
 			int dist_Posible = dist_Min + rutaAux->dist;
-		cerr<<"se rompe, despues de buscar algun vecino de origen, este es "<<aux -> id<<" con nivel "<<aux->nivel<<endl;
-			if(dist_Act > dist_Posible || dist_Act== -1){
-
-			cerr<<"se rompe, antes de generar_Ruta, nodo id, nivel y distactualizable "<<aux-> id<<" "<<aux->nivel<<" "<< dist_Posible<<endl;
-				generar_Ruta(*nodo_Origen, aux, dist_Posible);
-			}
+			if(dist_Act > dist_Posible || dist_Act== -1) generar_Ruta(*nodo_Origen, aux, dist_Posible);
 		}
 	}
 	int tiempo = buscar_Destinos(*nodo_Origen, destino);
 	return tiempo;
+}
+
+Nodo* buscarMin(vector<bool>& nodos, Nodo* nodo_Origen, int& dist_Min, int n){
+	Nodo* res= NULL;
+	dist_Min = -1;
+	list<Ruta>& ady = nodo_Origen->adyacente;
+	int min= numeric_limits<int>::max();
+	for (ItRuta it = ady.begin(); it != ady.end(); ++it){
+		Ruta* rut = &(*it);
+		int minPar= rut->dist;
+		int k= rut->destino->nivel;
+		if (minPar<min && nodos[(rut->destino->id)+ n*k]){
+			dist_Min = minPar;
+			min = minPar;
+			res= rut->destino;
+		}
+	}
+
+	return res;
+}
+
+void sacar(vector<bool>& ls,Nodo* valor, int n){
+	int i = (valor->id) + (n* valor->nivel);
+	ls[i]=false;
+}
+
+int buscador(Nodo& Nodo_Origen,Nodo* aux){
+	list<Ruta>& ady = Nodo_Origen.adyacente;
+	ItRuta it=ady.begin();
+	int res=-1;
+	bool b=true;
+	while(b && it!=ady.end()){
+		if(aux->id == it->destino->id && aux->nivel == it->destino->nivel){
+			res= it->dist;
+			b=false;
+		}
+		it++;
+	}
+	return res;
+}
+
+void generar_Ruta(Nodo& Nodo_Origen, Nodo* aux, int distancia){
+	list<Ruta>& ady = Nodo_Origen.adyacente;
+	ItRuta it=ady.begin();
+	bool esta=false;
+	while(!esta && it!=ady.end()){
+		if(aux->id == it->destino->id && aux->nivel == it->destino->nivel){
+			it->dist= distancia;
+			esta=true;
+		}
+		it++;
+	}
+	if(!esta){
+		Nodo_Origen.agregarVecino(aux,distancia);
+	}
+}
+
+//devuelve el valor minimo entre todos los nodos destinos, si no existe valor devuelve -1
+int buscar_Destinos(Nodo& Nodo_Origen, int dest){
+	int res= -1;
+	list<Ruta>& ady = Nodo_Origen.adyacente;
+	int min= numeric_limits<int>::max();
+	for (ItRuta it = ady.begin(); it != ady.end(); ++it){
+		Ruta* rut = &(*it);
+		int minPar= rut->dist;
+		int ident = rut->destino->id;
+		if (ident == dest-1 && minPar<min){
+			min= minPar;
+			res=minPar;
+		}
+	}
+	return res;
+}
+
+void imprimir_Vecinos(const Nodo& nod){
+	cerr<<"el nodo "<<nod.id <<"("<<nod.nivel<<") tiene de vecinos a: ";
+	list<Ruta> rut = nod.adyacente;
+	for(ItRuta it =rut.begin(); it != rut.end(); ++it){
+		//desref *it
+		Ruta aux = *it;
+		cerr<<"["<<aux.destino -> id<<"("<<aux.destino->nivel<<"), d: "<<aux.dist<<" p: "<<aux.premium<<"] ";
+	}
+	cerr<<endl;
+}
+
+void imprimir_Nivel(const Grafo& g, int i){
+	vector<Nodo> nivel = g[i];
+	for(int j = 0; j<nivel.size();j++){
+		imprimir_Vecinos(nivel[j]);
+		cerr<<endl;
+	}
+	cerr<<endl;
+}
+
+void imprimir_Grafo(const Grafo& g){
+	for(int i = 0; i<g.size(); i++) imprimir_Nivel(g, i);
+	cerr<<endl;
 }
 
 int solMatAdy(){
