@@ -4,10 +4,10 @@ import os
 from timeit import default_timer as timer
 
 ''' Generating Tests and Executing '''
-Size = 250	# from B to N size node
+Size = 150	# from B to N size node
 Cmax = 30  	# maximum cost
-Kmax = 250	# maximum premium roads
-Z 	 = 20	# how many times each size
+Kmax = 150	# maximum premium roads
+Z 	 = 50	# how many times each size
 R 	 = 1  	# how many times each case
 
 completeness = (False,True)
@@ -89,23 +89,41 @@ def generar_grafo(N,K,C,complete,is_solvable,qty_premium):
 
 
 def test_N():
+	# Test peor caso de m (completo en ambos sentidos)
+	# 	y cantidad de vertices fijo
+
 	open("res1", 'w').close()
-	csvEj1N = open("./timesEj1N.csv", "a")
+	csvEj1NC = open("./timesEj1NC.csv", "a")
+	csvEj1NnC = open("./timesEj1NnC.csv", "a")
 
-	for N in range(2,Size):
-		if (N % 5 == 0):
-			print(N)
+	for n in range(2,Size):
+		if (n % 5 == 0):
+			print(n)
 		for z in range(Z):
-			generar_grafo(N,4,Cmax,True,True,"all")
-			comm = "cat test1 | ./Ej1 >> res1" 
-			for i in range(0,R):
-				startEj = timer()
-				os.system(comm)
-				endEj = timer()
-				timeEj = endEj - startEj
-				csvEj1N.write('%s, %s\n'%(str(N),str(timeEj)))
+			lineC = "%s"%(str(n))
+			linenC = "%s"%(str(n))
+			for comp in completeness:
+				for solv in solvable:
+					for prem in premiums:
+						generar_grafo(n,15,Cmax,comp,solv,prem)
 
-	csvEj1N.close()
+						comm = "cat test1 | ./Ej1 >> res1" 
+						for i in range(0,R):
+							startEj = timer()
+							os.system(comm)
+							endEj = timer()
+							timeEj = endEj - startEj
+							if (comp):
+								lineC += ',%s'%(str(timeEj))
+							else:	
+								linenC += ',%s'%(str(timeEj))
+			lineC += '\n'
+			linenC += '\n'
+			csvEj1NC.write(lineC)
+			csvEj1NnC.write(linenC)
+
+	csvEj1NC.close()
+	csvEj1NnC.close()
 
 
 def test_K():
@@ -146,6 +164,7 @@ def test_K():
 	csvEj1KnC.close()
 
 
+test_N()
 test_K()
 
 
