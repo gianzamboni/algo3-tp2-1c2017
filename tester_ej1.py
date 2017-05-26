@@ -7,7 +7,7 @@ from timeit import default_timer as timer
 Size = 150	# from B to N size node
 Cmax = 30  	# maximum cost
 Kmax = 150	# maximum premium roads
-Z 	 = 50	# how many times each size
+Z 	 = 20	# how many times each size
 R 	 = 1  	# how many times each case
 
 completeness = (False,True)
@@ -145,7 +145,7 @@ def test_K():
 					for prem in premiums:
 						generar_grafo(50,k,Cmax,comp,solv,prem)
 
-						comm = "cat test1 | ./Ej1 >> res1" 
+						comm = "cat test1 | ./Ej1G >> res1" 
 						for i in range(0,R):
 							startEj = timer()
 							os.system(comm)
