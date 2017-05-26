@@ -101,6 +101,9 @@ void agregar_nodo_fictio(Grafo* g){
 int busqueda_binaria(int max, Grafo* g){
 	// Armar las compenentes conexas
 	int min = 0;
+
+	if(!hay_ciclos_negativos(g, g->n -1, max) ) return max;
+	
 	while(min + 1 < max){
 		int k = min + (max-min)/2;
 		if(hay_ciclos_negativos(g, g->n - 1, k)){
